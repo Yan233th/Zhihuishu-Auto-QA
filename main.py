@@ -101,9 +101,10 @@ def ask():
         case _:
             return
     for question in questions_list:
-        WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.CLASS_NAME, "ask-btn"))).click()  # 打开输入框
+        WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CLASS_NAME, "ask-btn"))).click()  # 打开输入框
         WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(question)
-        time.sleep(2.5)
+        check_CAPTCHA()
+        time.sleep(2)
         WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
         check_CAPTCHA()
         print(f"成功提问: {question}")
@@ -163,14 +164,15 @@ def answer():
                 new_page = window
         driver.switch_to.window(new_page)
         try:
-            WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.CLASS_NAME, "my-answer-btn"))).click()  # 打开输入框
+            WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CLASS_NAME, "my-answer-btn"))).click()  # 打开输入框
         except Exception:
             print(f"本题无法回答, 可能是已经回答过, 题目: {question}")
             driver.close()
             driver.switch_to.window(ori_page)
             continue
         WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(answer)
-        time.sleep(2.5)
+        check_CAPTCHA()
+        time.sleep(2)
         WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
         check_CAPTCHA()
         print(f"成功回答问题: {question}")
