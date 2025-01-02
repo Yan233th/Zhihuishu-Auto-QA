@@ -57,6 +57,15 @@ def check() -> bool:
             return False
 
 
+def check_CAPTCHA():
+    try:
+        time.sleep(0.5)
+        driver.find_element(By.CLASS_NAME, "yidun_modal")
+        input("出现验证码, 请手动完成后按回车键继续")
+    except Exception:
+        pass
+
+
 @reloading
 def ask():
     if not check():
@@ -92,11 +101,11 @@ def ask():
         case _:
             return
     for question in questions_list:
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CLASS_NAME, "ask-btn"))).click()  # 打开输入框
-        WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(question)
+        WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.CLASS_NAME, "ask-btn"))).click()  # 打开输入框
+        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(question)
         time.sleep(2.5)
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
-        time.sleep(1)
+        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
+        check_CAPTCHA()
 
 
 @reloading
@@ -120,7 +129,7 @@ def answer():
     for question in question_elements:
         print(question.text)
         question_text += question.text + "\n"  # 将所有元素的文本合并
-        question_title.append(question.text)
+        question_title.append(question.get_attribute("title"))
     ai_question = "请根据提供的问题生成对应的回答, 以下为问题:\n" + question_text
     ai_response = ai_client.chat.completions.create(
         model="deepseek-chat",
@@ -133,7 +142,7 @@ def answer():
         ],
         temperature=0.2,
     )
-    answers_list = ai_response.choices[0].message.content.split("\n")[:replies]
+    answers_list = ai_response.choices[0].message.content.replace("\n\n", "\n").split("\n")[:replies]
     print("\n以下为AI生成的回答:")
     for answer in answers_list:
         print(answer)
@@ -145,7 +154,7 @@ def answer():
     ori_page = driver.current_window_handle
     for answer, question in zip(answers_list, question_title):
         window_handles_before = driver.window_handles
-        driver.find_element(By.CSS_SELECTOR, f'div[title="{question}"]').click()
+        driver.find_element(By.XPATH, f'//div[@title="{question}"]').click()
         time.sleep(1)
         window_handles_after = driver.window_handles
         for window in window_handles_after:
@@ -153,15 +162,16 @@ def answer():
                 new_page = window
         driver.switch_to.window(new_page)
         try:
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CLASS_NAME, "my-answer-btn"))).click()  # 打开输入框
+            WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.CLASS_NAME, "my-answer-btn"))).click()  # 打开输入框
         except Exception:
             print(f"本题无法回答, 可能是已经回答过, 题目: {question}")
             driver.close()
             driver.switch_to.window(ori_page)
             continue
-        WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(answer)
+        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(answer)
         time.sleep(2.5)
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
+        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
+        check_CAPTCHA()
         print(f"成功回答问题: {question}")
         time.sleep(1)
         driver.close()
