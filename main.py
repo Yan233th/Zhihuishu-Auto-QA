@@ -106,6 +106,7 @@ def ask():
         time.sleep(2.5)
         WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
         check_CAPTCHA()
+        print(f"成功提问: {question}")
 
 
 @reloading
@@ -122,7 +123,7 @@ def answer():
         print("请输入正确的区间!")
         return
     replies = end - start + 1
-    print(f"正在获取页面中第{start}~{end}个问题并发给AI分析")
+    print(f"\n正在获取页面中第{start}~{end}个问题并发给AI分析, 题目列表如下:")
     question_elements = driver.find_elements(By.CLASS_NAME, "question-content")[start : end + 1]
     question_text = ""
     question_title = []
