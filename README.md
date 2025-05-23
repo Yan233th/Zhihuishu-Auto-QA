@@ -9,7 +9,7 @@ First, install the required dependencies.
 pip install -r ./requirements.txt
 ```
 
-Complete the `secret.py.example` file with your [DeepSeek API key](https://platform.deepseek.com/api_keys) for `api_key`.\
+Complete the `secret.py.example` file with your API key for the platform you are using for `api_key`.\
 Then copy or rename the file to `secret.py`.
 ```bash
 python -u ./main.py
