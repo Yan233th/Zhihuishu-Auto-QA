@@ -16,7 +16,7 @@ from secret import api_key
 with open("./config.json") as f:
     config = json.load(f)
 
-provider = ["deepseek", "siliconflow"][0]
+provider = ["deepseek", "siliconflow"][1]  # 切换平台, 须在config.json文件中平台相关配置
 base_url = config[provider]["base_url"]
 model_name = config[provider]["model_name"]
 
