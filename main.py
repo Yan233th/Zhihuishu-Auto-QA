@@ -1,5 +1,6 @@
 import time
 import sys
+import json
 from reloading import reloading
 from selenium.webdriver import Edge
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,6 +13,13 @@ from openai import OpenAI
 
 from secret import api_key
 
+with open("./config.json") as f:
+    config = json.load(f)
+
+provider = ["deepseek", "siliconflow"][0]
+base_url = config[provider]["base_url"]
+model_name = config[provider]["model_name"]
+
 print("正在启动浏览器")
 options = Options()
 options.add_argument("--disable-logging")
@@ -21,7 +29,7 @@ driver = Edge(service=Service(EdgeChromiumDriverManager().install(), log_path="n
 driver.get("https://onlineweb.zhihuishu.com/")
 print("已导航至智慧树学生首页, 请自行登录")
 
-ai_client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
+ai_client = OpenAI(api_key=api_key, base_url=base_url)
 
 
 def check() -> bool:
@@ -81,11 +89,11 @@ def ask():
         question_text += question.text + "\n"  # 将所有元素的文本合并
     ai_question = f"请根据提供的例子生成同领域相近但不相同的问题, 要求生成{asks}个, 以下为例子:\n" + question_text
     ai_response = ai_client.chat.completions.create(
-        model="deepseek-chat",
+        model=model_name,
         messages=[
             {
                 "role": "system",
-                "content": "你会收到很多问题作为样例, 你要根据提供的例子输出一定数量同领域相近但不相同的问题, 输出的问题数量将由用户指定, 单个问题需要在一行内不换行输出, 输出的问题以换行分隔, 不要使用Markdown或LaTeX语法, 切记要遵循问题数量",
+                "content": "你会收到很多问题作为样例, 你要根据提供的例子输出一定数量同领域相近但不相同的问题, 输出的问题数量将由用户指定, 单个问题需要在一行内不换行输出, 不要带有编号或序号, 输出的问题以换行分隔, 不要使用Markdown或LaTeX语法, 切记要遵循问题数量",
             },
             {"role": "user", "content": ai_question},
         ],
@@ -101,11 +109,11 @@ def ask():
         case _:
             return
     for question in questions_list:
-        WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CLASS_NAME, "ask-btn"))).click()  # 打开输入框
-        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(question)
+        WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.CLASS_NAME, "ask-btn"))).click()  # 打开输入框
+        WebDriverWait(driver, 1.5).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(question)
         check_CAPTCHA()
         time.sleep(2)
-        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
+        WebDriverWait(driver, 1.5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
         check_CAPTCHA()
         print(f"成功提问: {question}")
 
@@ -134,11 +142,11 @@ def answer():
         question_title.append(question.get_attribute("title"))
     ai_question = "请根据提供的问题生成对应的回答, 以下为问题:\n" + question_text
     ai_response = ai_client.chat.completions.create(
-        model="deepseek-chat",
+        model=model_name,
         messages=[
             {
                 "role": "system",
-                "content": "你会收到一些问题, 你要根据问题输出对应的回答, 单个问题的回答需要在一行内不换行输出, 输出的问题以换行分隔, 不要使用Markdown或LaTeX语法",
+                "content": "你会收到一些问题, 你要根据问题输出对应的回答, 单个问题的回答需要在一行内不换行输出, 不要带有编号或序号, 输出的问题以换行分隔, 不要使用Markdown或LaTeX语法",
             },
             {"role": "user", "content": ai_question},
         ],
@@ -170,10 +178,10 @@ def answer():
             driver.close()
             driver.switch_to.window(ori_page)
             continue
-        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(answer)
+        WebDriverWait(driver, 1.5).until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys(answer)
         check_CAPTCHA()
         time.sleep(2)
-        WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
+        WebDriverWait(driver, 1.5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".up-btn.ZHIHUISHU_QZMD.set-btn"))).click()
         check_CAPTCHA()
         print(f"成功回答问题: {question}")
         time.sleep(1)
