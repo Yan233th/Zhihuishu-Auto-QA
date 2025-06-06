@@ -1,4 +1,0 @@
-openai
-reloading
-selenium
-webdriver_manager

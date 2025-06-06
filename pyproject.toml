@@ -1,0 +1,12 @@
+[project]
+name = "zhihuishu-auto-qa"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.84.0",
+    "reloading>=1.1.2",
+    "selenium>=4.33.0",
+    "webdriver-manager>=4.0.2",
+]
